@@ -94,8 +94,18 @@ Open a [pull request] to submit changes to this project.
 Your pull request needs to meet the following guidelines for acceptance:
 
 - The Nox test suite must pass without errors and warnings.
+
 - Include unit tests. This project aims to maintain 100% code coverage which will be enforced soon.
+
 - If your changes add functionality, update the documentation accordingly.
+
+- Add a link to the related issue in the commit message. For instance:
+
+  ```
+  Change description.
+
+  Issue: <Issue Url>
+  ```
 
 Feel free to submit early, though—we can always iterate on this.
 
