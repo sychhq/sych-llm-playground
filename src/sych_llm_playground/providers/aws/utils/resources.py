@@ -1,4 +1,4 @@
-"""Utility module for fetching specific cloud resources.
+"""Utility module for fetching specific AWS resources.
 
 This module contains functions to get deployed cloud resources
 such as models and endpoints.
@@ -8,14 +8,14 @@ from typing import Any
 
 import click
 
-from .loader import start_loader
-from .loader import stop_loader
+from ....utils.loader import start_loader
+from ....utils.loader import stop_loader
 
 
 def get_resources(
     resource_type: str, sagemaker_client: Any, max_results: int = 99
 ) -> list[str]:
-    """Fetch deployed cloud resources based on the resource type.
+    """Fetch deployed AWS resources based on the resource type.
 
     This function retrieves the specified resource,
     either models or endpoints, and returns them as a list of strings. If the

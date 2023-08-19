@@ -8,4 +8,5 @@
 /docs/_build/
 /src/*.egg-info/
 __pycache__/
-/src/sych_llm_playground/.credentials
+/src/sych_llm_playground/providers/aws/.credentials
+.vscode/

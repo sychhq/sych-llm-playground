@@ -1,4 +1,4 @@
-"""This module provides utility functions for managing cloud credentials.
+"""This module provides utility functions for managing AWS cloud credentials.
 
 It includes functionality for:
 
@@ -26,8 +26,8 @@ from typing import Dict
 import click
 
 
-BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-CREDENTIALS_FILE = os.path.join(BASE_DIR, ".credentials")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+CREDENTIALS_FILE = os.path.join(BASE_DIR, "providers", "aws", ".credentials")
 
 
 def validate_credentials() -> bool:

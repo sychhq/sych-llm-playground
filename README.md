@@ -62,7 +62,16 @@ Please see the [Command-line Reference] for details.
                **********
                    **
 
-Welcome to Sych LLM Playground CLI! Let's get started with the configuration.
+Welcome to the Sych LLM Playground CLI.
+This tool is part of our efforts to contribute to the open-source community.
+Explore more at https://sych.io
+
+For detailed documentation, visit https://sych-llm-playground.readthedocs.io
+
+Let's begin with the configuration.
+
+[?] Please choose a provider:: AWS
+ > AWS
 
 Please Provide your AWS Access Key: xxxxxxxx
 Please provide your AWS Secret Key: xxxxx
@@ -78,6 +87,9 @@ Configuration successful!
 
 ```
 > sych-llm-playground deploy
+
+[?] Please choose a provider:: AWS
+ > AWS
 
 ✓ Cloud Credentials validated.
 
@@ -106,6 +118,9 @@ Deployment successful!
 ```
 > sych-llm-playground list
 
+[?] Please choose a provider:: AWS
+ > AWS
+
 ✓ Cloud Credentials validated.
 
 ✓ Cloud Credentials loaded.
@@ -124,6 +139,9 @@ sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692383398
 
 ```
 > sych-llm-playground interact
+
+[?] Please choose a provider:: AWS
+ > AWS
 
 ✓ Cloud Credentials validated.
 
@@ -161,6 +179,9 @@ Chat ended.
 
 ```
 > sych-llm-playground cleanup
+
+[?] Please choose a provider:: AWS
+ > AWS
 
 ✓ Cloud Credentials validated.
 
