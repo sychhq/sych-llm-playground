@@ -1,38 +1,25 @@
-"""Module to list deployed resources on the cloud.
+"""Module to list deployed resources with the chosen provider.
 
-This module contains a function to display deployed models and endpoints.
-The resources are listed by type, and the list function
-can be executed directly from the command-line interface.
+This module contains a function to display deployed resources,
+allowing the user to choose the provider for listing.
 
 Functions:
-    list: Command-line interface function to list deployed resources.
+    list: CLI function to list deployed resources with the selected provider.
 """
 
-import boto3
 import click
 
-from .utils.credentials import load_credentials
-from .utils.resources import get_resources
+from .utils.provider_selection import select_provider_and_call_function
 
 
-@click.command(help="Display resources deployed on the cloud.")
+@click.command(help="Display deployed resources.")
 def list() -> None:
-    """List deployed resources on the cloud.
+    """List deployed resources with the chosen provider.
 
-    This function retrieves and prints the names of deployed models and endpoints.
-    It uses the `get_resources` function from the `utils.resources`
-    module to fetch the resources and prints them in a user-friendly format.
+    This function prompts the user to select a provider.
+    Then, it retrieves and prints the names of deployed resources.
     """
-    load_credentials()
-    sagemaker_client = boto3.client("sagemaker")
-
-    resource_types = ["Model", "Endpoint"]
-    for resource_type in resource_types:
-        resources = get_resources(resource_type, sagemaker_client)
-        click.secho(f"Deployed {resource_type}s:", fg="yellow")
-        for resource in resources:
-            click.secho(resource, fg="green")
-    click.secho("\n", nl=False)
+    select_provider_and_call_function("list")
 
 
 if __name__ == "__main__":
