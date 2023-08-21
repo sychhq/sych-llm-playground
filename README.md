@@ -105,15 +105,30 @@ Configuration successful!
 
 Deploying... Why not grab a cup of coffee? /|\
 
+✓ Model and Endpoint Deployed
+
 Endpoint name: sych-llm-pg-meta-textgeneration-llama-2-7b-e-1692399247
 
-Deployment successful!
+✓ Created REST API
 
+✓ Fetched REST API
+
+✓ Created API resources
+
+✓ Created a POST method
+
+✓ Created API Integration with SageMaker endpoint
+
+✓ API Deployed
+
+Public API HTTP (POST) URL: https://dhdb1mu9w1.execute-api.us-west-2.amazonaws.com/prod/predict
+
+Deployment successful!
 ```
 
 ### List Resources
 
-- Get an overview of all the deployed resources, including models and endpoints.
+- Get an overview of all the deployed resources, including models, endpoints, and API Gateways.
 
 ```
 > sych-llm-playground list
@@ -126,16 +141,19 @@ Deployment successful!
 ✓ Cloud Credentials loaded.
 
 Deployed Models:
-sych-llm-pg-meta-textgeneration-llama-2-7b-f-m-1692383398
+{'name': 'sych-llm-pg-meta-textgeneration-llama-2-7b-f-m-1692586488'}
 
 Deployed Endpoints:
-sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692383398
+{'name': 'sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692586488', 'url': 'https://runtime.sagemaker.us-west-2.amazonaws.com/endpoints/sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692586488/invocations'}
+
+Deployed API Gateways:
+{'name': 'sych-llm-pg-api-sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692558825', 'id': 'dhdb1mu9w1', 'method': 'POST', 'url': 'https://dhdb1mu9w1.execute-api.us-west-2.amazonaws.com/prod/predict'}
 
 ```
 
 ### Interact with Models
 
-- Utilize a simple interface to communicate with deployed models, sending queries and receiving responses.
+- Utilize a simple interface to communicate with deployed models, sending queries and receiving responses including a chat interface with conversation history for chat models:
 
 ```
 > sych-llm-playground interact
@@ -173,9 +191,29 @@ Chat ended.
 
 ```
 
+- Interact via Public HTTP API
+
+```
+curl -X POST \
+    -H 'Content-Type: application/json' \
+    -H 'custom_attributes: accept_eula=true' \
+    -d '{"inputs": [[{"role": "system", "content": "Talk profession"}, {"role": "user", "content": "Hi my name is Ryan"}]], "parameters": {"max_new_tokens": 256, "top_p": 0.9, "temperature": 0.6}}' \
+    'https://valauuhvic.execute-api.us-west-2.amazonaws.com/prod/predict'
+
+[
+  {
+    "generation":{
+      "role":"assistant",
+      "content":" Hello Ryan, it's a pleasure to meet you. How may I assist you today? Is there something specific you need help with or would you like to discuss a particular topic? I'm here to listen and provide guidance to the best of my abilities. Please feel free to ask me anything."
+    }
+  }
+]%
+
+```
+
 ### Cleanup Resources
 
-- Safely remove deployed models and endpoints to manage costs and maintain a clean environment.
+- Safely remove deployed models, endpoints and API Gateways to manage costs and maintain a clean environment.
 
 ```
 > sych-llm-playground cleanup
@@ -190,6 +228,7 @@ Chat ended.
 [?] What would you like to cleanup?: Endpoint
   Model
 > Endpoint
+  API Gateway
 
 [?] Select a endpoint to cleanup:: sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692383398
  > sych-llm-pg-meta-textgeneration-llama-2-7b-f-e-1692383398
@@ -227,10 +266,19 @@ Playground currently supports the following platforms:
 
 ### [Amazon Web Services (AWS) SageMaker](https://aws.amazon.com)
 
-Amazon SageMaker is a managed service that provides developers and data scientists with the ability to build, train, and deploy machine learning (ML) models quickly. Key concepts include:
+Amazon SageMaker is a managed service that provides developers and data scientists with the ability to build, train, and deploy machine learning (ML) models quickly and easily. Here are some key concepts to understand:
 
-- **Model**: A trained machine learning model that you can deploy to an endpoint.
-- **Endpoint**: A hosted deployment of your model, which enables real-time predictions. Names of Endpoints and Models deployed by this Playground are in the format: `"sych-llm-pg-{model_id}-m-{timestamp}"`. The timestamp will allow you to match endpoints with their corresponding models when two or models exists with the same id.
+- **Model**: A trained machine learning model that can be deployed to an endpoint for making predictions.
+- **Endpoint**: A hosted deployment of your model, facilitating real-time predictions.
+- **API Gateway**: A gateway that allows you to call your endpoints. In the context of this tool, it enables interaction with models via a publicly accessible HTTP URL. This tool automatically creates a publicly available POST API endpoint upon successful deployment.
+
+The naming conventions for Models, Endpoints, and API Gateways deployed by this Playground follow these formats:
+
+- Model: `"sych-llm-pg-{model_id}-m-{timestamp}"`
+- Endpoint: `sych-llm-pg-{model_id}-e-{timestamp}`
+- API Gateway: `"sych-llm-pg-api-{endpoint_name}"`
+
+The timestamp in the naming convention helps in matching endpoints with their corresponding models, especially when two or more models exist with the same ID.
 
 #### AWS SageMaker Instance Types and Cloud Costs
 
@@ -250,12 +298,65 @@ AWS SageMaker allows running models on specific hardware instance types, such as
 
 #### Requirements
 
-- Registered AWS Account
-- AWS IAM User Access Key
-- AWS IAM User Secret Key
-- AWS IAM User must have `AmazonSageMakerFullAccess` permission policy assigned.
-- AWS IAM Role ARN
-- AWS IAM Role must have `AmazonSageMakerFullAccess` permission policy assigned.
+##### 1. **Register for an AWS Account**
+
+If you don't have one already, you can create an AWS account [here](https://aws.amazon.com).
+
+##### 2. **Create an IAM Role for SageMaker and API Gateway**
+
+Follow these steps to set up the role:
+
+a. **Create a New IAM Role**: Navigate to IAM in the AWS Console, and create a new role.
+
+b. **Add Trust Policy**: Use the following custom trust policy to allow SageMaker and API Gateway to assume this role:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "Service": ["sagemaker.amazonaws.com", "apigateway.amazonaws.com"]
+      },
+      "Action": "sts:AssumeRole"
+    }
+  ]
+}
+```
+
+c. **Attach Permission Policy**: Under the newly created role, attach the `AmazonSageMakerFullAccess` managed policy.
+
+##### 3. **Create an IAM User with Necessary Permissions**
+
+Here's how to create the user:
+
+a. **Create IAM User**: In the IAM section of the AWS Console, create a new user.
+
+b. **Attach Managed Policies**: Attach the `AmazonSageMakerFullAccess` and `AmazonAPIGatewayAdministrator` managed policies to the user.
+
+c. **Add Custom Inline Policy**: Add the following custom inline policy, replacing `YOUR_IAM_ROLE_ARN` with the ARN of the IAM role you created earlier:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": "iam:PassRole",
+      "Resource": "YOUR_IAM_ROLE_ARN"
+    }
+  ]
+}
+```
+
+d. **Create an Access Key**: In the user's security credentials tab, create a new access key. Be sure to store the generated Access Key ID and Secret Access Key in a safe place.
+
+##### 4. **Configure the CLI**
+
+Use the Access Key ID, Secret Access Key and your IAM role ARN to configure the CLI as shown in the examples above.
+
+### Other Cloud Providers
 
 Other popular cloud platforms are on our roadmap and will be supported soon. Stay tuned for updates, and don't hesitate to contribute or request support for your preferred platforms.
 

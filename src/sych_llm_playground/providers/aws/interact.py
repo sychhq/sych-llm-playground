@@ -6,63 +6,16 @@ and facilitate a chat interaction with a model.
 
 import json
 import re
-from typing import List
-from typing import cast
 
 import boto3
 import click
-import inquirer
 from sagemaker.predictor import Predictor
 from sagemaker.serializers import JSONSerializer
 
 from ...utils.loader import start_loader
 from ...utils.loader import stop_loader
 from .utils.credentials import load_credentials
-
-
-def get_endpoints() -> List[str]:
-    """Get a list of all deployed endpoints.
-
-    Returns:
-        List[str]: A list of endpoint names.
-    """
-    try:
-        loader_thread = start_loader(
-            message="Fetching deployed endpoints...", color="green"
-        )
-        sagemaker = boto3.client("sagemaker")
-        response = sagemaker.list_endpoints(
-            MaxResults=99
-        )  # Adjust MaxResults as needed
-        stop_loader(loader_thread)
-        endpoints = [endpoint["EndpointName"] for endpoint in response["Endpoints"]]
-        if not endpoints:
-            click.secho("No endpoints have been deployed so far.", fg="red")
-            exit(0)  # Exit the script if no endpoints are found
-        return endpoints
-    except Exception as e:
-        stop_loader(loader_thread)
-        click.secho(f"An error occurred while fetching endpoints: {e}", fg="red")
-        exit(1)
-
-
-def choose_endpoint() -> str:
-    """Prompt the user to select an endpoint from the list of available endpoints.
-
-    Returns:
-        str: The name of the selected endpoint.
-    """
-    endpoints = get_endpoints()
-    questions = [
-        inquirer.List(
-            "endpoint",
-            message="Select an endpoint to interact with:",
-            choices=endpoints,
-        ),
-    ]
-
-    answers = inquirer.prompt(questions)
-    return cast(str, answers["endpoint"])
+from .utils.resources import choose_resource
 
 
 def predict(selected_endpoint: str) -> None:
@@ -87,7 +40,8 @@ def predict(selected_endpoint: str) -> None:
     while not user_input.strip():
         user_input = input(
             click.style(
-                "Your Input (e.g., 'I believe the meaning of life is'): ", fg="blue"
+                "Your Input (e.g., 'I believe the meaning of life is'): ",
+                fg="blue",
             )
         )
 
@@ -233,23 +187,26 @@ def interact() -> None:
     """
     load_credentials()
 
-    selected_endpoint = choose_endpoint()
+    sagemaker_client = boto3.client("sagemaker")
+    selected_endpoint = choose_resource("Endpoint", sagemaker_client, "interact")
+    selected_endpoint_name = selected_endpoint["name"]
 
     # Extract the model ID from the endpoint name using a regular expression
-    match = re.match(r"^sych-llm-pg-(.*?)-e-", selected_endpoint)
+    match = re.match(r"^sych-llm-pg-(.*?)-e-", selected_endpoint_name)
     if match:
         model_id = match.group(1)
         interaction_function = INTERACTION_FUNCTIONS.get(model_id)
         if interaction_function:
-            interaction_function(selected_endpoint)
+            interaction_function(selected_endpoint_name)
         else:
             click.secho(
-                f"The model {model_id!r} is not currently supported. \n", fg="red"
+                f"The model {model_id!r} is not currently supported. \n",
+                fg="red",
             )
             exit(1)
     else:
         click.secho(
-            f"""The endpoint {selected_endpoint!r} does not match
+            f"""The endpoint {selected_endpoint_name!r} does not match
             any supported models. \n""",
             fg="red",
         )
