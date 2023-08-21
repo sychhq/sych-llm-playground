@@ -19,6 +19,7 @@ Note:
 import shutil
 import threading
 import time
+from typing import Optional
 
 import click
 
@@ -37,11 +38,17 @@ def loader(message: str, color: str) -> None:
     colored_message = click.style(message, fg=color)
     while loading:
         for char in chars:
-            click.echo("\r" + colored_message + " " + char, nl=False)
+            click.echo(
+                "\r" + colored_message + " " + char,
+                nl=False,
+            )
             time.sleep(0.1)
 
 
-def start_loader(message: str = "Loading...", color: str = "cyan") -> threading.Thread:
+def start_loader(
+    message: str = "Loading...",
+    color: str = "cyan",
+) -> threading.Thread:
     """Start the loading animation in a new thread.
 
     Args:
@@ -60,17 +67,26 @@ def start_loader(message: str = "Loading...", color: str = "cyan") -> threading.
     return t
 
 
-def stop_loader(thread: threading.Thread) -> None:
-    """Stop the loading animation and clear the terminal line.
+def stop_loader(
+    thread: threading.Thread,
+    message: Optional[str] = None,
+) -> None:
+    """Stop the loading animation and print a success message if provided.
 
     Args:
         thread (threading.Thread): The thread running the loading animation.
+        message (Optional[str], optional): Message to print after
+            stopping the loader. Defaults to None.
     """
     global loading
     loading = False
     thread.join()
     columns, _ = shutil.get_terminal_size()
-    click.echo(
-        "\r" + " " * columns, nl=False
-    )  # Clear the loader with the exact number of spaces
-    click.echo("\n", nl=False)
+    click.echo("\r" + " " * columns, nl=False)  # Clear the loader
+
+    if message:
+        click.secho(
+            f"\u2713 {message}",
+            fg="green",
+            nl=True,
+        )
