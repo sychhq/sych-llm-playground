@@ -2,7 +2,7 @@
 
 This module contains a function to display deployed models and endpoints on AWS.
 The resources are listed by type (Model, Endpoint), and the `list` function
-can be executed directly from the command-line interface to view all AWS SageMaker
+can be executed directly from the command-line interface to view all AWS
 deployed resources.
 
 Functions:
@@ -10,6 +10,7 @@ Functions:
 
 AWS Services:
     - AWS SageMaker: Used to retrieve information about deployed models and endpoints.
+    - AWS API Gateway: Use to create and manage API Endpoints.
 
 Dependencies:
     - boto3: AWS SDK for Python, used to interface with AWS services.
@@ -27,16 +28,21 @@ def list() -> None:
     """List deployed resources on AWS SageMaker.
 
     This function retrieves and prints the names of deployed models and endpoints
-    on AWS SageMaker. It uses the `get_resources` function from the
-    `utils.resources` module to fetch the resources, specifically targeting
-    AWS SageMaker services, and prints them in a user-friendly format.
+    on and their public API Gateways. It uses the `get_resources`
+    function from the `utils.resources` module to fetch the resources,
+    specifically targeting AWS SageMaker services, and prints them in
+    a user-friendly format.
     """
     load_credentials()
-    sagemaker_client = boto3.client("sagemaker")
 
-    resource_types = ["Model", "Endpoint"]
+    resource_types = ["Model", "Endpoint", "API Gateway"]
     for resource_type in resource_types:
-        resources = get_resources(resource_type, sagemaker_client)
+        client = (
+            boto3.client("sagemaker")
+            if resource_type != "API Gateway"
+            else boto3.client("apigateway")
+        )
+        resources = get_resources(resource_type, client)
         click.secho(f"Deployed {resource_type}s:", fg="yellow")
         for resource in resources:
             click.secho(resource, fg="green")
